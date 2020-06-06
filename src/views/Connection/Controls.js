@@ -1,7 +1,6 @@
 import socketIOClient from 'socket.io-client';
 import React, { Component } from 'react';
 import { store } from 'react-notifications-component';
-import { AwesomeButtonProgress } from 'react-awesome-button';
 import 'react-awesome-button/dist/styles.css';
 import {
   Nav,
@@ -160,7 +159,7 @@ class Controls extends Component {
     console.log(self.state);
   }
 
-  async startScreenShare(type, next) {
+  async startScreenShare(type) {
     const self = this;
     var tkn;
     // Get a new peerId.
@@ -203,7 +202,6 @@ class Controls extends Component {
               peer.reconnect();
               self.setUpConnections(self, peer, id, type, onlineArray);
             }
-            next();
           } else {
             console.log('My token: ' + id);
             self.updateSelfPeerInfo(self, peer, id, type);
@@ -219,12 +217,10 @@ class Controls extends Component {
     */
             console.log(self.state);
             self.setUpConnections(self, peer, id, type, onlineArray);
-            next();
           }
         })
         .catch((err) => {
           console.log(err);
-          next(false, 'Failed');
         });
     });
   }
@@ -414,7 +410,7 @@ connectedPeers: connectedPeers,
       console.log(err);
       thiscall.close();
       //self.deleteVideoElement(thiscall.peer);
-       self.startConnection(self, friendtkn, peer);
+      self.startConnection(self, friendtkn, peer);
 
       // If an error is observed, we automatically send another request to start connection,
       // to provide reliability. Since, we dont want both the receiver and username of the stream
@@ -575,7 +571,7 @@ videos.empty();
       });
   }
 
-  sendRequestToEndCall(next) {
+  sendRequestToEndCall() {
     const reqData = {
       roomName: this.state.roomName
     };
@@ -605,22 +601,16 @@ videos.empty();
           connectedPeers: new Set(),
           friendtkn: ''
         });
-        if (next) {
-          next();
-        }
         return;
       })
       .catch((err) => {
         console.log(err);
-        if (next) {
-          next(false, 'Error');
-        }
         return;
       });
   }
 
-  async endCall(next) {
-    await this.sendRequestToEndCall(next);
+  async endCall() {
+    await this.sendRequestToEndCall();
     if (this.state.myMediaStreamObj) {
       this.state.myMediaStreamObj.getTracks().forEach((track) => {
         console.log(track);
@@ -644,33 +634,17 @@ videos.empty();
         <br />
         <br />
         <Row className="justify-content-center text-center">
-          <AwesomeButtonProgress
-            type="primary"
-            size="medium"
-            action={(element, next) => {
-              this.startScreenShare('video', next);
-            }}>
-            <i className="icon-user icons"></i>
-            <span> Video</span>
-          </AwesomeButtonProgress>
-          <AwesomeButtonProgress
-            type="primary"
-            size="medium"
-            action={(element, next) => this.startScreenShare('screen', next)}>
-            <i className="icon-screen-desktop icons"></i>
-            <span> Screen</span>
-          </AwesomeButtonProgress>
-          <AwesomeButtonProgress
-            type="primary"
-            size="medium"
-            // visible={!self.state.calls.length} //use this if we want it completely hidden until needed instead
-            disabled={!self.state.myMediaStreamObj}
-            action={(element, next) => {
-              this.endCall(next);
-            }}>
-            <i className="icon-call-end icons"></i>
-            <span> End Call</span>
-          </AwesomeButtonProgress>
+          <div class="call-controls">
+            <i
+              onClick={() => this.startScreenShare('video')}
+              className="call-button icons icon-phone"></i>
+            <i
+              onClick={() => this.startScreenShare('screen')}
+              className="screen-button icons icon-screen-desktop"></i>
+            <i
+              onClick={() => this.endCall()}
+              className="end-button icons icon-call-end"></i>
+          </div>
         </Row>
         <br />
       </Container>
